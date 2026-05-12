@@ -8,6 +8,7 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
 
+  console.log("API_URL:", API_URL);
   useEffect(() => {
     fetchTodos();
   }, []);
