@@ -38,22 +38,54 @@
 # ===========================================
 
 version: '3.8'
-
 services:
   # STUDENT TODO: Define frontend service
   frontend:
     build: ./frontend
-    # TODO: Add ports, depends_on
+    ports:
+      - '8080:3000'
+    depends_on:
+      backend:
+        condition: service_healthy
 
   # STUDENT TODO: Define backend service
   backend:
     build: ./backend
-    # TODO: Add ports, environment, depends_on, healthcheck
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tododb
+      DB_USER: postgres
+      DB_PASSWORD: 123456789
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # STUDENT TODO: Define postgres service
   postgres:
     image: postgres:15-alpine
-    # TODO: Add environment, ports, volumes, healthcheck
+    environment:
+      POSTGRES_DB: tododb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456789
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/database.sql:/docker-entrypoint-initdb.d/database.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d tododb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 # STUDENT TODO: Define named volumes
 volumes:
